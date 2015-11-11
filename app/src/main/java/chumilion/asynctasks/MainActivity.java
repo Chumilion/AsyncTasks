@@ -6,17 +6,20 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Chronometer;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.Timer;
 
 public class MainActivity extends AppCompatActivity
 {
-
+    ProgressBar progressBar;
+    TextView textView;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -35,6 +38,12 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        textView = (TextView) findViewById(R.id.textView);
+
+        ProgressBarTask progressBarTask = new ProgressBarTask();
+        progressBarTask.myActivity = this;
+        progressBarTask.execute(5);
     }
 
     @Override
@@ -62,25 +71,43 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public 
+    public void setUpProgress(int max)
+    {
+        progressBar.setMax(max);
+    }
+
+    public void updateProgress(int run)
+    {
+        progressBar.setProgress(run);
+    }
+
+    public void finishProgress(String result)
+    {
+        textView.setText(result);
+    }
 }
-class ProgressBarTask extends AsyncTask<Integer, Float, String>
+class ProgressBarTask extends AsyncTask<Integer, Integer, String>
 {
-    ProgressBar progressBar;
+    MainActivity myActivity;
     protected String doInBackground(Integer... tim)
     {
-        progressBar.setMax(tim[0]*1000);
+        myActivity.setUpProgress(tim[0]*1000);
         long startTime = System.currentTimeMillis();
         while(System.currentTimeMillis() - startTime < tim[0]*1000)
         {
-            float frac = (System.currentTimeMillis() - startTime)/(1000*tim[0]);
-            publishProgress(frac);
-            return "Finished!"
+            int run = (int) (System.currentTimeMillis() - startTime);
+            publishProgress(run);
         }
+        return "Finished!";
     }
 
-    protected void onProgressUpdate(Float... frac)
+    protected void onProgressUpdate(Integer... runn)
     {
-        progressBar.setProgress();
+        myActivity.updateProgress(runn[0]);
+    }
+
+    protected void onPostExecute(String result)
+    {
+        myActivity.finishProgress(result);
     }
 }
